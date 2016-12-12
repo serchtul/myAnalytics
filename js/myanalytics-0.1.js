@@ -11,6 +11,8 @@ my original plans to release this to the world.
 
 (Still, you are very much encouraged to tweak the code to fit your
 very own needs and purpose :D)
+
+Distributed under the MIT License
 ======================================================================
 */
 
@@ -30,15 +32,19 @@ var eys_array = []; //An array containing all entities retrieved by the script
 const names = Object.freeze({
 	iGT: {"type" : "opportunity", "programme": 2},
 	oGT: {"type" : "person", "programme": 2},
-	iGC: {"type" : "opportunity", "programme": 1},
-	oGC: {"type" : "person", "programme": 1},
+	iGV: {"type" : "opportunity", "programme": 1},
+	oGV: {"type" : "person", "programme": 1},
+	iGE: {"type" : "opportunity", "programme": 5},
+	oGE: {"type" : "person", "programme": 5},
 });
 
 var retrieved = {
 	"iGT" : 0,
 	"oGT" : 0,
-	"iGC" : 0,
-	"oGC" : 0,
+	"iGV" : 0,
+	"oGV" : 0,
+	"iGE" : 0,
+	"oGE" : 0,
 	"name" : 0,
 }
 var error = false;
@@ -91,8 +97,10 @@ function cleanup(){
 	retrieved = {
 		"iGT" : 0,
 		"oGT" : 0,
-		"iGC" : 0,
-		"oGC" : 0,
+		"iGV" : 0,
+		"oGV" : 0,
+		"iGE" : 0,
+		"oGE" : 0,
 		"name" : 0,
 	};
 
@@ -121,9 +129,6 @@ function generalreq(url,params,callback) {
 		if(xhr.status == 401) { //Unauthorized
 			$('#statusbar').html("Access token is invalid. Try again with another one.");
 			setCookie("access_token","",-1);
-		}
-		else if(xhr.status == 503) { //Server is at capacity
-			$('#statusbar').html("Los AIESECos son malvados con EXPA y sus servidores están saturados. Intenta más tarde.");
 		}
 		else { //Every other error (mostly 404, EXPA seems to like 404 errors a lot)
 			$('#statusbar').html("EXPA hates you, thus your request failed :C Please try again.");
@@ -165,10 +170,14 @@ function analyticsreq(){
 	else { //There's an access token
 
 		//Calls up a general data request to the API for each programme
-		reqdata(names.iGC.type,names.iGC.programme,"iGC");
+		reqdata(names.iGV.type,names.iGV.programme,"iGV");
 		reqdata(names.iGT.type,names.iGT.programme,"iGT");
+		reqdata(names.iGE.type,names.iGE.programme,"iGE");
+
+		reqdata(names.oGV.type,names.oGV.programme,"oGV");
 		reqdata(names.oGT.type,names.oGT.programme,"oGT");
-		reqdata(names.oGC.type,names.oGC.programme,"oGC");
+		reqdata(names.oGE.type,names.oGE.programme,"oGE");
+
 
 		//Request the list of entities
 		reqeys(req_entity);
@@ -228,7 +237,7 @@ function getPercentage(){
 			loaded++;
 		tot++;
 	}
-	return loaded/tot*100;
+	return Math.round(loaded/tot*100);
 }
 
 function populate(data,programme){
@@ -267,7 +276,8 @@ function populateLCs(data){
 
 function showResults(a){
 	if(retrieved.iGT == 1 && retrieved.oGT == 1 &&
-		retrieved.iGC == 1 && retrieved.oGC == 1 &&
+		retrieved.iGV == 1 && retrieved.oGV == 1 &&
+		retrieved.iGE == 1 && retrieved.oGE == 1 &&
 		retrieved.name == 1) {
 		for (var i = a.length - 1; i >= 0; i--) {
 			if(a[i]!=undefined && i!=req_entity) {
@@ -277,26 +287,34 @@ function showResults(a){
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].name;
 				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].iGC_ap||0;
+				col.innerHTML=a[i].iGV_ap||0;
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].iGT_ap||0;
 				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].oGC_ap||0;
+				col.innerHTML=a[i].iGE_ap||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].oGV_ap||0;
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].oGT_ap||0;
 				col = newrow.insertCell(-1);
-				col.innerHTML=(a[i].iGT_ap||0)+(a[i].oGT_ap||0)+(a[i].iGC_ap||0)+(a[i].oGC_ap||0);
+				col.innerHTML=a[i].oGE_ap||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=(a[i].iGT_ap||0)+(a[i].oGT_ap||0)+(a[i].iGV_ap||0)+(a[i].oGV_ap||0)+(a[i].iGE_ap||0)+(a[i].oGE_ap||0);
 
 				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].iGC_re||0;
+				col.innerHTML=a[i].iGV_re||0;
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].iGT_re||0;
 				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].oGC_re||0;
+				col.innerHTML=a[i].iGE_re||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].oGV_re||0;
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].oGT_re||0;
 				col = newrow.insertCell(-1);
-				col.innerHTML=(a[i].iGT_re||0)+(a[i].oGT_re||0)+(a[i].iGC_re||0)+(a[i].oGC_re||0);
+				col.innerHTML=a[i].oGE_re||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=(a[i].iGT_re||0)+(a[i].oGT_re||0)+(a[i].iGV_re||0)+(a[i].oGV_re||0)+(a[i].iGE_re||0)+(a[i].oGE_re||0);
 			}
 		}
 		$('#statusbar').html("");
