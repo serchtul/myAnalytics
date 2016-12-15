@@ -13,13 +13,14 @@
 			font-family: Lato;
 		}
 	</style>
-	<script src="js/myanalytics-0.1.js">
+	<script src="js/myanalytics-0.2beta.js">
 	</script>
 </head>
 <body>
 	<h1>Fast Analytics for @ers</h1>
 	
 	<div id="statusbar"></div>
+	<div id="errorbar"></div>
 	<form id="settings">
 		<p>Access Token: <input id="atoken" size="80"></p> <!-- TO-DO: Add info for the non-tech -->
 		<p>Entidad: 
@@ -28,6 +29,7 @@
 			            Add EXPA self-updating tool (adding new EYs).
 			            Remove hard-coded EYs -->
 			    <!-- TO-DO: Add an option for all MCs -->
+			    <option value='-1'>All MCs</option>
 				<option value='1632'>Middle East and Africa</option>
 				<option value='1630'>Asia Pacific</option>
 				<option value='1629'>Europe</option>
