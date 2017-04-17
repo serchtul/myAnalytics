@@ -1,7 +1,6 @@
 /*
 ======================================================================
-myAnalytics v0.2beta
-NOW WITH ALL MCs!!
+myAnalytics v0.1
 By: Sergio García [https://github.com/secasema/myanalytics]
 
 Please note that this is not meant to be a standalone script, instead
@@ -20,25 +19,34 @@ Distributed under the MIT License
 //TO-DO sometime: - csv exports (maybe even xlsx export)
 //                - proper documentation (lol :P)
 
-//Global request variables (retrieved from html view)
+//Global request variables (retrieved from page)
 var req_entity = 1589;
 var req_start_date,req_end_date;
 var access_token;
-var total_items;
-var retrieved_items;
+
+var eys_array = []; //An array containing all entities retrieved by the script
 
 //Constants used by EXPA's API v2
 //  ->type = ["opportunity"|"person"] (Corresponding to ICX and OGX respectively)
 //  ->programme = [1|2] (Corresponding to GC and GT respectively)
 const names = Object.freeze({
-	iGT: {"name":"iGT", "type" : "opportunity", "programme": 2},
-	oGT: {"name":"oGT", "type" : "person", "programme": 2},
-	iGV: {"name":"iGV", "type" : "opportunity", "programme": 1},
-	oGV: {"name":"oGV", "type" : "person", "programme": 1},
-	iGE: {"name":"iGE", "type" : "opportunity", "programme": 5},
-	oGE: {"name":"oGE", "type" : "person", "programme": 5},
+	iGT: {"type" : "opportunity", "programme": 2},
+	oGT: {"type" : "person", "programme": 2},
+	iGV: {"type" : "opportunity", "programme": 1},
+	oGV: {"type" : "person", "programme": 1},
+	iGE: {"type" : "opportunity", "programme": 5},
+	oGE: {"type" : "person", "programme": 5},
 });
 
+var retrieved = {
+	"iGT" : 0,
+	"oGT" : 0,
+	"iGV" : 0,
+	"oGV" : 0,
+	"iGE" : 0,
+	"oGE" : 0,
+	"name" : 0,
+}
 var error = false;
 access_token = getCookie("access_token");
 
@@ -56,10 +64,10 @@ $(function(){
 	if(getCookie("access_token")) {
 		$("#atoken").val(getCookie("access_token")); //Gets the cookie, even if invalid
 		//TO-DO: Check with API whether token is still valid and not use it in that case
-		
-		//Submit an analytics request
-		analyticsreq();
 	}
+
+	//Submit an analytics request
+	analyticsreq();
 
 	//Attach an event handler when Submit button gets a new request
 	$("#submitbtn").click(function (){
@@ -85,6 +93,17 @@ $(function(){
  */
 
 function cleanup(){
+	eys_array = []; //Garbage collector will take care of all the detached objects
+	retrieved = {
+		"iGT" : 0,
+		"oGT" : 0,
+		"iGV" : 0,
+		"oGV" : 0,
+		"iGE" : 0,
+		"oGE" : 0,
+		"name" : 0,
+	};
+
 	document.getElementById("results").tBodies[0].innerHTML = ""; //Cleans up table rows except for headers
 	$("th[data-sorted='true']").removeAttr("data-sorted-direction")
 	$("th[data-sorted='true']").attr('data-sorted','false');
@@ -148,189 +167,77 @@ function analyticsreq(){
 	if(!access_token) { //If there's no access token send an error to the user and do nothing
 		$('#statusbar').html("Error: Please provide an access token.");
 	}
-	else if(req_entity == -1) { //User requested all entitites
-		total_items = 28; //There's a total of 28 retrievable objects (7 for each region)
-		retrieved_items = 0;
+	else { //There's an access token
 
-		var reqs = [{"region":1632,"promise":$.Deferred()},
-					{"region":1630,"promise":$.Deferred()},
-					{"region":1629,"promise":$.Deferred()},
-					{"region":1627,"promise":$.Deferred()},];
+		//Calls up a general data request to the API for each programme
+		reqdata(names.iGV.type,names.iGV.programme,"iGV");
+		reqdata(names.iGT.type,names.iGT.programme,"iGT");
+		reqdata(names.iGE.type,names.iGE.programme,"iGE");
 
-		$.when(reqs[0].promise,reqs[1].promise,reqs[2].promise,reqs[3].promise).done(
-		function (r1,r2,r3,r4){
-			console.log("Regions done!");
-			
-			var regions_info = [];
+		reqdata(names.oGV.type,names.oGV.programme,"oGV");
+		reqdata(names.oGT.type,names.oGT.programme,"oGT");
+		reqdata(names.oGE.type,names.oGE.programme,"oGE");
 
-			$.each([r1,r2,r3,r4],function (index,arr) {
-				$.each(arr,function (id,data) {
-					if(data!=undefined) {
-						regions_info[id] = data;
-					}
-				});
-			});
 
-			showResults(regions_info);
-
-		});
-
-		for (var i = reqs.length - 1; i >= 0; i--) {
-			simpleReq(access_token,reqs[i].region,reqs[i].promise.resolve);
-		}
-	}
-	else { //There's an access token & it's a normal request
-		total_items = 7; //There's a total of 7 retrievable objects (6 Xers + LCs)
-		retrieved_items = 0;
-
-		simpleReq(access_token,req_entity,function (eys_info){
-			showResults(eys_info);
-		});
+		//Request the list of entities
+		reqeys(req_entity);
 
 		$('#statusbar').html("Loading data...");
 	}
 
 }
 
-function simpleReq(access_token,ey,cb) {
-	var iGVpromise = $.Deferred();
-	var iGTpromise = $.Deferred();
-	var iGEpromise = $.Deferred();
-	var oGVpromise = $.Deferred();
-	var oGTpromise = $.Deferred();
-	var oGEpromise = $.Deferred();
-	var EYpromise = $.Deferred();
-
-	$.when(iGVpromise,iGTpromise,iGEpromise,
-		oGVpromise,oGTpromise,oGEpromise,
-		EYpromise).done(function (igv,igt,ige,ogv,ogt,oge,ey){
-		console.log("All Done!");
-		/*console.log(igv);
-		console.log(igt);
-		console.log(ige);
-		console.log(ogv);
-		console.log(ogt);
-		console.log(oge);
-		console.log(ey);*/ //DEBUG
-
-		var eys_info = ey;
-
-		$.each([igv,igt,ige,ogv,ogt,oge],function (index,arr) {
-			$.each(arr,function (id,data) {
-				if(data!=undefined && eys_info[id]!=undefined) {
-					$.extend(eys_info[id], data);
-				}
-			});
-		});
-
-		//console.log("EYs info");
-		//console.log(eys_info);
-
-		if(cb != undefined)
-			cb(eys_info);
-	});
-	//Calls up a general data request to the API for each product
-	reqdata(access_token,ey,names.iGV,iGVpromise);
-	reqdata(access_token,ey,names.iGT,iGTpromise);
-	reqdata(access_token,ey,names.iGE,iGEpromise);
-
-	reqdata(access_token,ey,names.oGV,oGVpromise);
-	reqdata(access_token,ey,names.oGT,oGTpromise);
-	reqdata(access_token,ey,names.oGE,oGEpromise);
-
-	//Request the list of entities
-	reqeys(access_token,ey,EYpromise);
-}
-
-function reqeys(access_token,ey,cb){
+function reqeys(ey){
 	if(ey==-1) {
 		req_entity = ey;
 		console.log("Empty request")
 	}
 	else {
-		var url = "https://gis-api.aiesec.org/v1/offices/"+ey+".json"; //Using version 1
+		var url = "https://gis-api.aiesec.org/v1/offices/"+req_entity+".json"; //Using version 1
 		generalreq(url,{"access_token" : access_token},function (data){
-
-			$('#statusbar').html("Loading... ("+getPercentage()+"%)");
+			populateLCs(data);
+			if($('#statusbar').html() == "Loading data...") {
+				$('#statusbar').html("");
+			}
+			if(!error) {
+				$('#statusbar').html("Loading... ("+getPercentage()+"%)");
+			}
 			console.log("Retrieved LC names");
-
-			cb.resolve(formatEYs(data));
-			//showResults(eys_array);
+			showResults(eys_array);
 		});
 	}
 }
 
-function reqdata(access_token,ey,selected,cb){
-	var type = selected.type;
-	var programme = selected.programme;
-	var name = selected.name;
-
+function reqdata(type,programme,name){
 	var url = "https://gis-api.aiesec.org/v2/applications/analyze.json";
 	var params = {
 		"access_token" : access_token,
 		"start_date" : req_start_date,
 		"end_date" : req_end_date,
-		"basic[home_office_id]" : ey,
+		"basic[home_office_id]" : req_entity,
 		"basic[type]" : type,
 		"programmes[]" : programme,
 	}
-	//console.log(params);
+	console.log(params);
 	generalreq(url,params,function (data){
-
+		populate(data,name);
+		if($('#statusbar').html() == "Loading data...") {
+			$('#statusbar').html("");
+		}
 		$('#statusbar').html("Loading... ("+getPercentage()+"%)");
 		console.log("Retrieved "+name);
-
-		cb.resolve(formatAnalytics(data,name));
+		showResults(eys_array);
 	});
 }
 
 function getPercentage(){
-	//Uses global variables
-	return Math.round(++retrieved_items/total_items*100);
-}
-
-function formatAnalytics(data,programme){
-	//Check format analytics.children.buckets (Array)
-	//key,doc_count, total_an_accepted (unique_profiles),total_applications (applicants),total_approvals,total_completed,total_matched,total_realized
-	//total_x => doc_count
-
-	var res = [];
-
-	try {
-		var arr = data.analytics.children.buckets;
-		for (var i = arr.length - 1; i >= 0; i--) {
-			if(res[arr[i].key] == undefined)
-				res[arr[i].key] = {};
-			res[arr[i].key][programme+"_ap"] = arr[i].total_approvals.doc_count;
-			res[arr[i].key][programme+"_re"] = arr[i].total_realized.doc_count;
-		}
+	var tot = 0,loaded = 0;
+	for (var prop in retrieved) {
+		if(retrieved[prop] == 1)
+			loaded++;
+		tot++;
 	}
-	catch(err){
-		$('#errorbar').html("Hubo un error interno! :S");
-		console.error("formatAnalytics failed for "+programme+": "+err);
-	}
-	finally {
-		return res;
-	}
-}
-
-function formatEYs(data){
-	var res = [];
-
-	try {
-		var arr = data.suboffices;
-		for (var i = arr.length - 1; i >= 0; i--) {
-			if(res[arr[i].id] == undefined)
-				res[arr[i].id] = {};
-			res[arr[i].id].name = arr[i].name;
-		}
-	}
-	catch(err){
-		$('#statusbar').html("There was an error with the request! :S");
-	}
-	finally {
-		return res;
-	}
+	return Math.round(loaded/tot*100);
 }
 
 function populate(data,programme){
@@ -368,49 +275,43 @@ function populateLCs(data){
 }
 
 function showResults(a){
-	if(true){ //There used to be a condition here, but using promises makes it overhead
-		for (var i = a.length - 1; i >= 0; i--) { //For all EYs inside the bucket
+	if(retrieved.iGT == 1 && retrieved.oGT == 1 &&
+		retrieved.iGV == 1 && retrieved.oGV == 1 &&
+		retrieved.iGE == 1 && retrieved.oGE == 1 &&
+		retrieved.name == 1) {
+		for (var i = a.length - 1; i >= 0; i--) {
 			if(a[i]!=undefined && i!=req_entity) {
 				var tres = document.getElementById("results").tBodies.item(0);
 				var newrow = tres.insertRow(-1);
 				var col;
-				//Creates new rows with data from all EYs and inserts it in the right order
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].name;
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].iGV_ap||0;
 				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].iGT_ap||0;
-				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].iGE_ap||0;
+				col.innerHTML=(a[i].iGT_ap||0)+a[i].iGE_ap||0;
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].oGV_ap||0;
 				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].oGT_ap||0;
-				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].oGE_ap||0;
+				col.innerHTML=(a[i].oGT_ap||0)+a[i].oGE_ap||0;
 				col = newrow.insertCell(-1);
 				col.innerHTML=(a[i].iGT_ap||0)+(a[i].oGT_ap||0)+(a[i].iGV_ap||0)+(a[i].oGV_ap||0)+(a[i].iGE_ap||0)+(a[i].oGE_ap||0);
 
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].iGV_re||0;
 				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].iGT_re||0;
-				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].iGE_re||0;
+				col.innerHTML=(a[i].iGT_re||0)+a[i].iGE_re||0;
 				col = newrow.insertCell(-1);
 				col.innerHTML=a[i].oGV_re||0;
 				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].oGT_re||0;
-				col = newrow.insertCell(-1);
-				col.innerHTML=a[i].oGE_re||0;
+				col.innerHTML=(a[i].oGT_re||0)+a[i].oGE_re||0;
 				col = newrow.insertCell(-1);
 				col.innerHTML=(a[i].iGT_re||0)+(a[i].oGT_re||0)+(a[i].iGV_re||0)+(a[i].oGV_re||0)+(a[i].iGE_re||0)+(a[i].oGE_re||0);
 			}
 		}
 		$('#statusbar').html("");
 		var exampleTable = document.querySelector('table#results')
-		Sortable.init(); //Restarts sortable script
+		Sortable.init();
 	}
 }
 
@@ -500,10 +401,10 @@ function presetDate(value){
 			document.getElementById("ffin").value = formatDate(end);
 			break;
 		case "thisyear":
-			//Start date is February the 1st of this year (we change month and date)
+			//Start date is January the 1st of this year (we change month and date)
 			start = new Date(currdate); //This year info (oversimplified)
 			start.setDate(1); //1st of
-			start.setMonth(1); //February
+			start.setMonth(0); //January
 
 			document.getElementById("fini").value = formatDate(start);
 			document.getElementById("ffin").value = formatDate(currdate); //End date is current date
