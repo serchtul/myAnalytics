@@ -298,11 +298,14 @@ function formatAnalytics(data,programme){
 
 	try {
 		var arr = data.analytics.children.buckets;
+		console.log(arr[0]);
 		for (var i = arr.length - 1; i >= 0; i--) {
 			if(res[arr[i].key] == undefined)
 				res[arr[i].key] = {};
 			res[arr[i].key][programme+"_ap"] = arr[i].total_approvals.doc_count;
 			res[arr[i].key][programme+"_re"] = arr[i].total_realized.doc_count;
+			res[arr[i].key][programme+"_fin"] = arr[i].total_finished.doc_count;
+			res[arr[i].key][programme+"_co"] = arr[i].total_completed.doc_count;
 		}
 	}
 	catch(err){
@@ -406,6 +409,36 @@ function showResults(a){
 				col.innerHTML=a[i].oGE_re||0;
 				col = newrow.insertCell(-1);
 				col.innerHTML=(a[i].iGT_re||0)+(a[i].oGT_re||0)+(a[i].iGV_re||0)+(a[i].oGV_re||0)+(a[i].iGE_re||0)+(a[i].oGE_re||0);
+
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].iGV_fin||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].iGT_fin||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].iGE_fin||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].oGV_fin||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].oGT_fin||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].oGE_fin||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=(a[i].iGT_fin||0)+(a[i].oGT_fin||0)+(a[i].iGV_fin||0)+(a[i].oGV_fin||0)+(a[i].iGE_fin||0)+(a[i].oGE_fin||0);
+
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].iGV_co||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].iGT_co||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].iGE_co||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].oGV_co||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].oGT_co||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=a[i].oGE_co||0;
+				col = newrow.insertCell(-1);
+				col.innerHTML=(a[i].iGT_co||0)+(a[i].oGT_co||0)+(a[i].iGV_co||0)+(a[i].oGV_co||0)+(a[i].iGE_co||0)+(a[i].oGE_co||0);
 			}
 		}
 		$('#statusbar').html("");
