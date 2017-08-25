@@ -580,6 +580,16 @@ function presetDate(value){
 			document.getElementById("fini").value = formatDate(start);
 			document.getElementById("ffin").value = formatDate(end);
 			break;
+		case "today":
+			//TO-DO: Verify whether this works on January (it should, given that the bit down below does)
+			
+			//Set the start date to be the 1st day of last month
+			start = new Date(currdate);
+			end = start;
+
+			document.getElementById("fini").value = formatDate(start);
+			document.getElementById("ffin").value = formatDate(end);
+			break;
 	}
 
 	function formatDate(d){
