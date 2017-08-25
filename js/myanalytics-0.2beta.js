@@ -542,14 +542,14 @@ function presetDate(value){
 			document.getElementById("ffin").value = formatDate(currdate); //End date is current date
 			break;
 		case "thismc":
-			//Start date is the July 1st that's closer in the past (either this year or last year,
-			//depending on whether request is made after/during July this year or before that)
+			//Start date is the August 1st that's closer in the past (either this year or last year,
+			//depending on whether request is made after/during August this year or before that)
 			
-			//Set start Date to be July the 1st of this year
+			//Set start Date to be August the 1st of this year
 			start = new Date(currdate); //This year info (oversimplified)
 			start.setDate(1); //1st of
-			start.setMonth(6); //July
-			//If July the 1st hasn't happened yet
+			start.setMonth(7); //August
+			//If August the 1st hasn't happened yet
 			if(start > currdate)
 				start.setFullYear(start.getFullYear()-1); //Then set it to last year's
 
