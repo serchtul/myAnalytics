@@ -15,7 +15,7 @@
 			font-family: Lato;
 		}
 	</style>
-	<script src="js/myanalytics-0.2beta.js">
+	<script src="js/myanalytics-0.3.js">
 	</script>
 </head>
 <body>
@@ -56,6 +56,8 @@
 		</p>
 	</form>
 
+	<div id="updatetime"></div>
+
 	<table id="results" class="sortable-theme-bootstrap" data-sortable>
 		<thead>
 			<tr>
@@ -66,7 +68,7 @@
 				<th data-sortable-type="numeric">oGV<br>APD</th>
 				<th data-sortable-type="numeric">oGT<br>APD</th>
 				<th data-sortable-type="numeric">oGE<br>APD</th>
-				<th data-sortable-type="numeric">Total<br>APD</th>
+				<th id="total-apd" data-sortable-type="numeric">Total<br>APD</th>
 				<th data-sortable-type="numeric">iGV<br>RE</th>
 				<th data-sortable-type="numeric">iGT<br>RE</th>
 				<th data-sortable-type="numeric">iGE<br>RE</th>
