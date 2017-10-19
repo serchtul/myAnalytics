@@ -19,7 +19,7 @@
 	</script>
 </head>
 <body>
-	<h1>Fast Analytics for @ers</h1>
+	<h1>Process Time - Fast Analytics for @ers</h1>
 	
 	<div id="statusbar"></div>
 	<div id="errorbar"></div>
@@ -60,36 +60,32 @@
 
 	<table id="results" class="sortable-theme-bootstrap" data-sortable>
 		<thead>
+			 
 			<tr>
-				<th>Entity</th>
-				<th data-sortable-type="numeric">iGV<br>APD</th>
-				<th data-sortable-type="numeric">iGT<br>APD</th>
-				<th data-sortable-type="numeric">iGE<br>APD</th>
-				<th data-sortable-type="numeric">oGV<br>APD</th>
-				<th data-sortable-type="numeric">oGT<br>APD</th>
-				<th data-sortable-type="numeric">oGE<br>APD</th>
-				<th id="total-apd" data-sortable-type="numeric">Total<br>APD</th>
-				<th data-sortable-type="numeric">iGV<br>RE</th>
-				<th data-sortable-type="numeric">iGT<br>RE</th>
-				<th data-sortable-type="numeric">iGE<br>RE</th>
-				<th data-sortable-type="numeric">oGV<br>RE</th>
-				<th data-sortable-type="numeric">oGT<br>RE</th>
-				<th data-sortable-type="numeric">oGE<br>RE</th>
-				<th data-sortable-type="numeric">Total<br>RE</th>
-				<th data-sortable-type="numeric">iGV<br>Fin</th>
-				<th data-sortable-type="numeric">iGT<br>Fin</th>
-				<th data-sortable-type="numeric">iGE<br>Fin</th>
-				<th data-sortable-type="numeric">oGV<br>Fin</th>
-				<th data-sortable-type="numeric">oGT<br>Fin</th>
-				<th data-sortable-type="numeric">oGE<br>Fin</th>
-				<th data-sortable-type="numeric">Total<br>Fin</th>
-				<th data-sortable-type="numeric">iGV<br>CO</th>
-				<th data-sortable-type="numeric">iGT<br>CO</th>
-				<th data-sortable-type="numeric">iGE<br>CO</th>
-				<th data-sortable-type="numeric">oGV<br>CO</th>
-				<th data-sortable-type="numeric">oGT<br>CO</th>
-				<th data-sortable-type="numeric">oGE<br>CO</th>
-				<th data-sortable-type="numeric">Total<br>CO</th>
+				<th id="eysort">Entity</th>
+				<th data-sortable-type="numeric">iGV&nbsp;ACC</th>
+				<th data-sortable-type="numeric">iGV&nbsp;APD</th>
+				<th data-sortable-type="numeric">iGV&nbsp;RE</th>
+
+				<th data-sortable-type="numeric">iGT&nbsp;ACC</th>
+				<th data-sortable-type="numeric">iGT&nbsp;APD</th>
+				<th data-sortable-type="numeric">iGT&nbsp;RE</th>
+
+				<th data-sortable-type="numeric">iGE&nbsp;ACC</th>
+				<th data-sortable-type="numeric">iGE&nbsp;APD</th>
+				<th data-sortable-type="numeric">iGE&nbsp;RE</th>
+
+				<th data-sortable-type="numeric">oGV&nbsp;ACC</th>
+				<th data-sortable-type="numeric">oGV&nbsp;APD</th>
+				<th data-sortable-type="numeric">oGV&nbsp;RE</th>
+
+				<th data-sortable-type="numeric">oGT&nbsp;ACC</th>
+				<th data-sortable-type="numeric">oGT&nbsp;APD</th>
+				<th data-sortable-type="numeric">oGT&nbsp;RE</th>
+
+				<th data-sortable-type="numeric">oGE&nbsp;ACC</th>
+				<th data-sortable-type="numeric">oGE&nbsp;APD</th>
+				<th data-sortable-type="numeric">oGE&nbsp;RE</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -99,7 +95,7 @@
 </body>
 <script>
 	$(function(){
-		callFunction(reqdata,showResults);
+		callFunction(reqprocess,showTimeResults);
 	});
 </script>
 </html>

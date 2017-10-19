@@ -1,7 +1,7 @@
 /*
 ======================================================================
-myAnalytics v0.3
-NOW it uses JS Promises! Includes functions for Process Time and Basic Analytics
+myAnalytics v0.2beta
+NOW it uses JS Promises!
 By: Sergio García [https://github.com/secasema/myanalytics]
 
 Please note that this is not meant to be a standalone script, instead
@@ -27,6 +27,7 @@ var req_start_date,req_end_date;
 var access_token;
 var total_items;
 var retrieved_items;
+var loadPromise = 0;
 var timer = null;
 
 //Constants used by EXPA's API v2
@@ -41,6 +42,7 @@ const names = Object.freeze({
 	oGE: {"name":"oGE", "type" : "person", "programme": 5},
 });
 
+var error = false;
 access_token = getCookie("access_token");
 
 
@@ -50,7 +52,7 @@ access_token = getCookie("access_token");
 ======================================================================
 */
 
-function callFunction(fn,fn2) {
+$(function(){
 	//Pre-loads default settings
 	presetDate("thisyear");
 
@@ -60,21 +62,22 @@ function callFunction(fn,fn2) {
 		//TO-DO: Check with API whether token is still valid and not use it in that case
 		
 		//Submit an analytics request
-		analyticsreq(fn,fn2);
+		analyticsreq();
 	}
 
 	//Attach an event handler when Submit button gets a new request
 	$("#submitbtn").click(function (){
 		if(timer == null) {
+			
 			timer = setInterval(() => {
 				$("#submitbtn").trigger( "click" );
 			},10*60*1000); //refresh results every 10 minutes
 		}
-		analyticsreq(fn,fn2); //Submit an analytics request
+		analyticsreq(); //Submit an analytics request
 	});
 
 	//TO-DO: Either respond to "GET" analytics requests, or attach event to "Enter" keystroke
-}
+});
 
 /*
 ======================================================================
@@ -124,17 +127,18 @@ function generalreq(url,params,callback,resolve,reject) {
  * Triggers analytics request for the children of the specified entity.
  */
 
-function analyticsreq(fn1,fn2){
+function analyticsreq(){
+	//console.log("New Analytics Request"); //Uncomment for debug
 
 	//Get variable values from the HTML Form
-	//TO-DO: Maybe add some field validation (?) [Not sure how necessary though]
+	//TO-DO: Maybe add some validation (?) [Not sure how necessary though]
 	req_entity = $("#ey").val();
 	req_start_date = $("#fini").val();
 	req_end_date = $("#ffin").val();
 	aux_token = $("#atoken").val();
 	if(aux_token != ""){ //Check's the access token field
 		access_token = aux_token;
-		//If there's not a cookie yet, then set one for a third of a day
+		//If there's not a cookie yet, then set one for half a day
 		//Note-to-self: How convenient is to have this for a third of a day? What's the ideal time?
 		if(!getCookie("access_token"))
 			setCookie("access_token",access_token,1/3); 
@@ -150,10 +154,11 @@ function analyticsreq(fn1,fn2){
 		var reqs = [{"region":1632},{"region":1630},{"region":1629},{"region":1627}];
 
 		reqs.forEach(el => {
-			el.promise = new Promise((resolve,reject) => baseAsyncReq(access_token,el.region,fn1,resolve,reject));
+			el.promise = new Promise((resolve,reject) => simpleReq(access_token,el.region,null,resolve,reject));
 		});
 
-		Promise.all(reqs.map(el => el.promise)).then(regions => {
+		console.log(reqs);
+		Promise.all([reqs[0].promise,reqs[1].promise,reqs[2].promise,reqs[3].promise]).then(regions => {
 			console.log("Regions done!");
 			
 			var regions_info = [];
@@ -168,10 +173,9 @@ function analyticsreq(fn1,fn2){
 
 			//Cleans layout for showing results
 			cleanup();
-			fn2(regions_info);
-			$( "#eysort" ).trigger( "click" );
+			showResults(regions_info);
 			$( "#total-apd" ).trigger( "click" );
-		},msg => console.error(msg));
+		});
 
 	}
 	else { //There's an access token & it's a normal request
@@ -179,13 +183,12 @@ function analyticsreq(fn1,fn2){
 		retrieved_items = 0;
 
 
-		var reqPromise = new Promise((resolve,reject) => baseAsyncReq(access_token,req_entity,fn1,resolve,reject));
+		var reqPromise = new Promise((resolve,reject) => simpleReq(access_token,req_entity,null,resolve,reject));
 		
 		reqPromise.then(eys_info => {
 			//Cleans layout for showing results
 			cleanup();
-			fn2(eys_info);
-			$( "#eysort" ).trigger( "click" );
+			showResults(eys_info);
 			$( "#total-apd" ).trigger( "click" );
 		},msg => console.error(msg));
 
@@ -194,21 +197,17 @@ function analyticsreq(fn1,fn2){
 
 }
 
-function baseAsyncReq(access_token,ey,indreq,res,rej) {
+function simpleReq(access_token,ey,cb,resolve,reject) {
 	var iGVpromise,iGTpromise,iGEpromise,oGVpromise,oGTpromise,oGEpromise,EYpromise;
-	var scope= {
-		error:false
-	};
 
 	//Calls up a general data request to the API for each product
-	iGVpromise = new Promise((resolve,reject) => indreq(access_token,ey,names.iGV,resolve,reject)).then(showProgress.bind(scope));
-	iGTpromise = new Promise((resolve,reject) => indreq(access_token,ey,names.iGT,resolve,reject)).then(showProgress.bind(scope));
-	iGEpromise = new Promise((resolve,reject) => indreq(access_token,ey,names.iGE,resolve,reject)).then(showProgress.bind(scope));
-	oGVpromise = new Promise((resolve,reject) => indreq(access_token,ey,names.oGV,resolve,reject)).then(showProgress.bind(scope));
-	oGTpromise = new Promise((resolve,reject) => indreq(access_token,ey,names.oGT,resolve,reject)).then(showProgress.bind(scope));
-	oGEpromise = new Promise((resolve,reject) => indreq(access_token,ey,names.oGE,resolve,reject)).then(showProgress.bind(scope));
-	EYpromise = new Promise((resolve,reject) => reqeys(access_token,ey,resolve,reject)).then(showProgress.bind(scope));
-
+	iGVpromise = new Promise((resolve,reject) => reqdata(access_token,ey,names.iGV,resolve,reject));
+	iGTpromise = new Promise((resolve,reject) => reqdata(access_token,ey,names.iGT,resolve,reject));
+	iGEpromise = new Promise((resolve,reject) => reqdata(access_token,ey,names.iGE,resolve,reject));
+	oGVpromise = new Promise((resolve,reject) => reqdata(access_token,ey,names.oGV,resolve,reject));
+	oGTpromise = new Promise((resolve,reject) => reqdata(access_token,ey,names.oGT,resolve,reject));
+	oGEpromise = new Promise((resolve,reject) => reqdata(access_token,ey,names.oGE,resolve,reject));
+	EYpromise = new Promise((resolve,reject) => reqeys(access_token,ey,resolve,reject));
 
 	//If all request promises are fulfilled show information, if not, show error in status bar and console
 	Promise.all([EYpromise,iGVpromise,iGTpromise,iGEpromise,oGVpromise,oGTpromise,oGEpromise]).then(values => {
@@ -222,28 +221,26 @@ function baseAsyncReq(access_token,ey,indreq,res,rej) {
 				}
 			});
 		});
-		console.info("Success!");
-		if(res) {
-			res(eys_info); 
+		if(resolve) {
+			resolve(eys_info); 
 		}
 	},xhr => {
-
-		console.info(xhr);
 		error_text = xhr.status == 401
 		? "Access token is invalid. Try again with another one." + (setCookie("access_token","",-1)||"")
 		: "EXPA hates you, thus your request failed :C Please try again.";
 
-		scope.error=true;
 		$('#statusbar').html(error_text);
-
-		console.info("failure :C");
-		if(rej) {
-			rej(error_text);
-		}
-		else {
-			console.warn("No Reject for main promise");
+		if(reject) {
+			reject(error_text);
 		}
 	});
+
+	//Request the list of entities
+	//reqeys(access_token,ey,EYpromise);
+}
+
+function promiseSuccess(data) {
+	console.log();
 }
 
 function reqeys(access_token,ey,resolve,reject){
@@ -254,48 +251,13 @@ function reqeys(access_token,ey,resolve,reject){
 	else {
 		var url = "https://gis-api.aiesec.org/v1/offices/"+ey+".json"; //Using version 1
 		generalreq(url,{"access_token" : access_token},function (data){
+
+			$('#statusbar').html("Loading... ("+getPercentage()+"%)");
 			console.log("Retrieved LC names");
 
 			resolve(formatEYs(data));
-		},resolve,reject);
+		});
 	}
-}
-
-function showProgress(data) {
-	if(this.error === false) {
-		$('#statusbar').html("Loading... ("+getPercentage()+"%)");
-	}
-	else {
-		console.warn("Error in showProgress function");
-	}
-	return data;
-}
-
-function reqprocess(access_token,ey,selected,resolve,reject){
-	var type = selected.type;
-	var programme = selected.programme;
-	var name = selected.name;
-
-
-	//console.log("Entered Data Request");
-
-	var url = "https://gis-api.aiesec.org/v2/applications/analyze.json";
-	var params = {
-		"access_token" : access_token,
-		"start_date" : req_start_date,
-		"end_date" : req_end_date,
-		"process_time[home_office_id]" : ey,
-		"process_time[type]" : type,
-		"programmes[]" : programme,
-	}
-	//console.log(params);
-	generalreq(url,params,function (data){
-
-		//$('#statusbar').html("Loading... ("+getPercentage()+"%)");
-		console.log("Retrieved "+name);
-
-		resolve(formatTimeAnalytics(data,name));
-	},resolve,reject);
 }
 
 function reqdata(access_token,ey,selected,resolve,reject){
@@ -318,6 +280,7 @@ function reqdata(access_token,ey,selected,resolve,reject){
 	//console.log(params);
 	generalreq(url,params,function (data){
 
+		$('#statusbar').html("Loading... ("+getPercentage()+"%)");
 		console.log("Retrieved "+name);
 
 		resolve(formatAnalytics(data,name));
@@ -327,33 +290,6 @@ function reqdata(access_token,ey,selected,resolve,reject){
 function getPercentage(){
 	//Uses global variables
 	return Math.round(++retrieved_items/total_items*100);
-}
-
-function formatTimeAnalytics(data,programme){
-	//Check format analytics.children.buckets (Array)
-	//key,doc_count, total_an_accepted (unique_profiles),total_applications (applicants),total_approvals,total_completed,total_matched,total_realized
-	//total_x => doc_count
-
-	var res = [];
-
-	try {
-		var arr = data.analytics.children.buckets;
-		console.log(arr[0]);
-		for (var i = arr.length - 1; i >= 0; i--) {
-			if(res[arr[i].key] == undefined)
-				res[arr[i].key] = {};
-			res[arr[i].key][programme+"_acc"] = arr[i].acceptance_time;
-			res[arr[i].key][programme+"_apd"] = arr[i].approval_time;
-			res[arr[i].key][programme+"_re"] = arr[i].delivery_time;
-		}
-	}
-	catch(err){
-		$('#errorbar').html("Hubo un error interno! :S");
-		console.error("formatAnalytics failed for "+programme+": "+err);
-	}
-	finally {
-		return res;
-	}
 }
 
 function formatAnalytics(data,programme){
@@ -435,63 +371,6 @@ function populateLCs(data){
 	catch(err){
 		$('#statusbar').html("Hubo un error interno! :S");
 	}
-}
-
-function showTimeResults(a){
-	for (var i = a.length - 1; i >= 0; i--) { //For all EYs inside the bucket
-		if(a[i]!=undefined && i!=req_entity) {
-			var tres = document.getElementById("results").tBodies.item(0);
-			var newrow = tres.insertRow(-1);
-			var col;
-			//Creates new rows with data from all EYs and inserts it in the right order
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].name;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].iGV_acc||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].iGV_apd||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].iGV_re||0;
-
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].iGT_acc||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].iGT_apd||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].iGT_re||0;
-
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].iGE_acc||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].iGE_apd||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].iGE_re||0;
-
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].oGV_acc||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].oGV_apd||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].oGV_re||0;
-
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].oGT_acc||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].oGT_apd||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].oGT_re||0;
-
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].oGE_acc||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].oGE_apd||0;
-			col = newrow.insertCell(-1);
-			col.innerHTML=a[i].oGE_re||0;
-		}
-	}
-	//$('#statusbar').html("");
-	var exampleTable = document.querySelector('table#results')
-	Sortable.init(); //Restarts sortable script
 }
 
 function showResults(a){
