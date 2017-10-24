@@ -1,0 +1,130 @@
+
+<html>
+<head>
+	<!-- Wanna use/improve this code? GitHub: https://github.com/secasema/myAnalytics -->
+	<title>myAnalytics</title>
+	<script src="./js/jquery-2.2.3.min.js"></script>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<META http-equiv="CACHE-CONTROL" content="NO-CACHE">
+
+	<link href="https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+	<script src="./js/sortable.min.js"></script>
+	<link rel="stylesheet" href="./css/sortable-theme-bootstrap.css" />
+	<style type="text/css">
+		* {
+			font-family: Lato;
+		}
+	</style>
+	<script src="js/myanalytics-0.3.js"></script>
+	<script>
+		function toggle(name) {
+			let checkbox = document.getElementById(name+"check");
+			let prod = document.getElementsByClassName(name);
+
+			for (let i = prod.length - 1; i >= 0; i--) {
+				if(checkbox && !checkbox.checked) {
+					prod[i].style.display = "none";
+				}
+				else
+					prod[i].style.display = "table-cell";
+			}
+
+		}
+	</script>
+</head>
+<body>
+	<h1>Conversion Rate - Fast Analytics for @ers</h1>
+	
+	<div id="statusbar"></div>
+	<div id="errorbar"></div>
+	<form id="settings">
+		<p>Access Token: <input id="atoken" size="80"></p> <!-- TO-DO: Add info for the non-tech -->
+		<p>Entity: 
+			<select id="ey">
+				<!-- TO-DO: Create a JS script for this.
+			            Add EXPA self-updating tool (adding new EYs).
+			            Remove hard-coded EYs -->
+			    <!-- TO-DO: Add an option for all MCs -->
+			    <option value='-1'>All MCs</option>
+				<option value='1632'>Middle East and Africa</option>
+				<option value='1630'>Asia Pacific</option>
+				<option value='1629'>Europe</option>
+				<option value='1627'>Americas</option>
+				<option value='572'>AFGHANISTAN</option><option value='133'>ALBANIA </option><option value='457'>ALGERIA</option><option value='1535'>Argentina</option><option value='1541'>ARMENIA</option><option value='1591'>AUSTRALIA</option><option value='1592'>AUSTRIA</option><option value='539'>AZERBAIJAN</option><option value='518'>BAHRAIN</option><option value='2010'>Bangladesh</option><option value='30'>BARBADOS</option><option value='79'>BELARUS</option><option value='1624'>BELGIUM</option><option value='459'>BENIN</option><option value='1593'>BOLIVIA</option><option value='1590'>Bosnia and Herzegovina</option><option value='1584'>BOTSWANA</option><option value='1606'>BRAZIL</option><option value='1588'>BULGARIA</option><option value='180'>BURKINA FASO</option><option value='305'>Cambodia</option><option value='1581'>Cameroon</option><option value='1554'>CANADA</option><option value='29'>CAPE VERDE</option><option value='1566'>CHILE</option><option value='1613'>CHINA, MAINLAND</option><option value='1551'>COLOMBIA</option><option value='577'>COSTA RICA</option><option value='1537'>COTE D'IVOIRE</option><option value='1595'>CROATIA</option><option value='1570'>CZECH REPUBLIC</option><option value='1577'>DENMARK</option><option value='1599'>DOMINICAN REPUBLIC</option><option value='1567'>ECUADOR</option><option value='1609'>EGYPT</option><option value='1572'>EL SALVADOR</option><option value='1565'>ESTONIA</option><option value='476'>ETHIOPIA</option><option value='1620'>FINLAND</option><option value='1597'>FRANCE</option><option value='499'>GABON</option><option value='531'>GEORGIA</option><option value='1596'>GERMANY</option><option value='1568'>Ghana</option><option value='1555'>GREECE</option><option value='1556'>GUATEMALA</option><option value='1594'>Hong Kong</option><option value='1549'>Hungary</option><option value='1550'>ICELAND</option><option value='1585'>INDIA</option><option value='1539'>Indonesia</option><option value='495'>IRAN</option><option value='1540'>Ireland</option><option value='1542'>ITALY</option><option value='1615'>JAPAN</option><option value='530'>JORDAN</option><option value='494'>KAZAKHSTAN</option><option value='1617'>KENYA</option><option value='1562'>KOREA</option><option value='56'>KUWAIT</option><option value='543'>KYRGYZSTAN</option><option value='55'>LAOS</option><option value='1579'>LATVIA</option><option value='182'>LEBANON</option><option value='219'>LIBERIA</option><option value='1580'>Lithuania</option><option value='105'>LUXEMBOURG</option><option value='1709'>Malawi</option><option value='1611'>MALAYSIA</option><option value='1612'>Malta</option><option value='489'>MAURITIUS</option><option value='1589' selected>Mexico</option><option value='536'>MOLDOVA</option><option value='409'>MONGOLIA</option><option value='57'>MONTENEGRO</option><option value='1552'>MOROCCO</option><option value='1574'>MOZAMBIQUE</option><option value='4'>MYANMAR</option><option value='78'>NAMIBIA</option><option value='112'>NEPAL</option><option value='1616'>NEW ZEALAND</option><option value='178'>NICARAGUA</option><option value='1578'>NIGERIA</option><option value='1573'>NORWAY</option><option value='477'>OMAN</option><option value='1603'>PAKISTAN</option><option value='1582'>PANAMA</option><option value='177'>PARAGUAY</option><option value='1553'>Peru</option><option value='1604'>Philippines</option><option value='1564'>POLAND</option><option value='1544'>PORTUGAL</option><option value='1538'>Puerto Rico</option><option value='529'>QATAR</option><option value='1548'>Republic of Macedonia</option><option value='1560'>ROMANIA</option><option value='1618'>RUSSIA</option><option value='506'>Rwanda</option><option value='1605'>SENEGAL</option><option value='1547'>SERBIA</option><option value='1840'>Seychelles</option><option value='1575'>SINGAPORE</option><option value='1536'>SLOVAKIA</option><option value='1587'>SLOVENIA</option><option value='1545'>SOUTH AFRICA</option><option value='1619'>SPAIN</option><option value='1623'>SRI LANKA</option><option value='1601'>SWEDEN</option><option value='1558'>SWITZERLAND</option><option value='1561'>TAIWAN</option><option value='537'>TAJIKISTAN</option><option value='567'>TANZANIA</option><option value='1607'>THAILAND</option><option value='1598'>THE NETHERLANDS</option><option value='1543'>TOGO</option><option value='1559'>TUNISIA</option><option value='1622'>TURKEY</option><option value='1602'>UGANDA</option><option value='1610'>UKRAINE</option><option value='1625'>UNITED ARAB EMIRATES</option><option value='1563'>UNITED KINGDOM</option><option value='1621'>UNITED STATES</option><option value='1614'>URUGUAY</option><option value='1557'>VENEZUELA</option><option value='504'>VIETNAM</option>
+			</select>
+		</p>
+		<p>Start Date <input id="fini" type="date"> &nbsp;&nbsp; End Date <input id="ffin" type="date"> 
+		&nbsp;&nbsp;
+		Common Dates: 
+		<select onchange="presetDate(this.value)">
+			<option value="thisyear">This LC year so far</option> <!-- This year so far -->
+			<option value="thisweek">This week so far</option> <!-- This week so far -->
+			<option value="lastweek">Last week</option> <!-- Last week -->
+			<option value="thismonth">This month so far</option> <!-- This month so far -->
+			<option value="thismc">This MC term so far</option> <!-- This MC term so far -->
+			<option value="today">Today</option> <!-- Today -->
+		</select>
+		</p>
+		<p>
+			<input type="button" value="Show Information" id="submitbtn">
+		</p>
+		<p>
+			<span>Show product:</span><br/>
+			<input type="checkbox" id="iGVcheck" checked="" onchange="toggle('iGV')">iGV</input>&nbsp;&nbsp;
+			<input type="checkbox" id="iGTcheck" checked="" onchange="toggle('iGT')">iGT</input>&nbsp;&nbsp;
+			<input type="checkbox" id="iGEcheck" checked="" onchange="toggle('iGE')">iGE</input>&nbsp;&nbsp;
+			<input type="checkbox" id="oGVcheck" checked="" onchange="toggle('oGV')">oGV</input>&nbsp;&nbsp;
+			<input type="checkbox" id="oGTcheck" checked="" onchange="toggle('oGT')">oGT</input>&nbsp;&nbsp;
+			<input type="checkbox" id="oGEcheck" checked="" onchange="toggle('oGE')">oGE</input>&nbsp;&nbsp;
+		</p>
+	</form>
+
+	<div id="updatetime"></div>
+
+	<table id="results" class="sortable-theme-bootstrap" data-sortable>
+		<thead>
+			 
+			<tr style="text-align:center;">
+				<th id="eysort">Entity</th>
+				<th data-sortable-type="numeric" class="iGV">iGV<br>APP2ACC</th>
+				<th data-sortable-type="numeric" class="iGV">iGV<br>ACC2APD</th>
+				<th data-sortable-type="numeric" class="iGV">iGV<br>APD2RE</th>
+				<th data-sortable-type="numeric" class="iGV">iGV<br>FIN2CO</th>
+
+				<th data-sortable-type="numeric" class="iGT">iGT<br>APP2ACC</th>
+				<th data-sortable-type="numeric" class="iGT">iGT<br>ACC2APD</th>
+				<th data-sortable-type="numeric" class="iGT">iGT<br>APD2RE</th>
+				<th data-sortable-type="numeric" class="iGT">iGT<br>FIN2CO</th>
+
+				<th data-sortable-type="numeric" class="iGE">iGE<br>APP2ACC</th>
+				<th data-sortable-type="numeric" class="iGE">iGE<br>ACC2APD</th>
+				<th data-sortable-type="numeric" class="iGE">iGE<br>APD2RE</th>
+				<th data-sortable-type="numeric" class="iGE">iGE<br>FIN2CO</th>
+
+				<th data-sortable-type="numeric" class="oGV">oGV<br>APP2ACC</th>
+				<th data-sortable-type="numeric" class="oGV">oGV<br>ACC2APD</th>
+				<th data-sortable-type="numeric" class="oGV">oGV<br>APD2RE</th>
+				<th data-sortable-type="numeric" class="oGV">oGV<br>FIN2CO</th>
+
+				<th data-sortable-type="numeric" class="oGT">oGT<br>APP2ACC</th>
+				<th data-sortable-type="numeric" class="oGT">oGT<br>ACC2APD</th>
+				<th data-sortable-type="numeric" class="oGT">oGT<br>APD2RE</th>
+				<th data-sortable-type="numeric" class="oGT">oGT<br>FIN2CO</th>
+
+				<th data-sortable-type="numeric" class="oGE">oGE<br>APP2ACC</th>
+				<th data-sortable-type="numeric" class="oGE">oGE<br>ACC2APD</th>
+				<th data-sortable-type="numeric" class="oGE">oGE<br>APD2RE</th>
+				<th data-sortable-type="numeric" class="oGE">oGE<br>FIN2CO</th>
+			</tr>
+		</thead>
+		<tbody>
+			
+		</tbody>
+	</table>
+</body>
+<script>
+	$(function(){
+		callFunction(reqdata,showConversionResults);
+	});
+</script>
+</html>

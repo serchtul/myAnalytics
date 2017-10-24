@@ -1,8 +1,11 @@
 /*
 ======================================================================
 myAnalytics v0.3
-NOW it uses JS Promises! Includes functions for Process Time and Basic Analytics
-By: Sergio García [https://github.com/secasema/myanalytics]
+NOW it uses JS Promises! Includes functions for:
+-Process Time
+-Conversion Rate
+-Basic Analytics
+By: Sergio García [https://github.com/secasema/myAnalytics]
 
 Please note that this is not meant to be a standalone script, instead
 it is meant to be used with the html view. I do know that the callback
@@ -369,6 +372,8 @@ function formatAnalytics(data,programme){
 		for (var i = arr.length - 1; i >= 0; i--) {
 			if(res[arr[i].key] == undefined)
 				res[arr[i].key] = {};
+			res[arr[i].key][programme+"_app_unique"] = arr[i].total_applications.applicants.value;
+			res[arr[i].key][programme+"_acc_unique"] = arr[i].total_matched.unique_profiles.value;
 			res[arr[i].key][programme+"_ap"] = arr[i].total_approvals.doc_count;
 			res[arr[i].key][programme+"_re"] = arr[i].total_realized.doc_count;
 			res[arr[i].key][programme+"_fin"] = arr[i].total_finished.doc_count;
@@ -493,6 +498,121 @@ function showTimeResults(a){
 	var exampleTable = document.querySelector('table#results')
 	Sortable.init(); //Restarts sortable script
 }
+
+function showConversionResults(a){
+	console.log(a)
+	for (var i = a.length - 1; i >= 0; i--) { //For all EYs inside the bucket
+		if(a[i]!=undefined && i!=req_entity) {
+			var tres = document.getElementById("results").tBodies.item(0);
+			var newrow = tres.insertRow(-1);
+			var col;
+			//Creates new rows with data from all EYs and inserts it in the right order
+			col = newrow.insertCell(-1);
+			col.innerHTML=a[i].name;
+
+			//For each product
+			//Step 1: Make sure both values are defined. If not, mark as unavailable i.e.:"-"
+			//Step 2: If dividend is cero, mark as unavailable i.e.:"-"
+			//Step 3: If neither of above, do the division and put it as a value.
+			//Step 4: AddClassName to cell
+
+			fDiv = (a,b) => {
+				return a&&b?(b!=0?new Number(a/b*100).toFixed(2)+"%":"-"):"-";
+			}; //Function to format division
+
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGV_acc_unique,a[i].iGV_app_unique);
+			col.classList.add("iGV");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGV_ap,a[i].iGV_acc_unique);
+			col.classList.add("iGV");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGV_re,a[i].iGV_ap);
+			col.classList.add("iGV");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGV_co,a[i].iGV_fin);
+			col.classList.add("iGV");
+			toggle('iGV');
+
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGT_acc_unique,a[i].iGT_app_unique);
+			col.classList.add("iGT");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGT_ap,a[i].iGT_acc_unique);
+			col.classList.add("iGT");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGT_re,a[i].iGT_ap);
+			col.classList.add("iGT");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGT_co,a[i].iGT_fin);
+			col.classList.add("iGT");
+			toggle('iGT');
+
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGE_acc_unique,a[i].iGE_app_unique);
+			col.classList.add("iGE");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGE_ap,a[i].iGE_acc_unique);
+			col.classList.add("iGE");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGE_re,a[i].iGE_ap);
+			col.classList.add("iGE");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].iGE_co,a[i].iGE_fin);
+			col.classList.add("iGE");
+			toggle('iGE');
+
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGV_acc_unique,a[i].oGV_app_unique);
+			col.classList.add("oGV");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGV_ap,a[i].oGV_acc_unique);
+			col.classList.add("oGV");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGV_re,a[i].oGV_ap);
+			col.classList.add("oGV");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGV_co,a[i].oGV_fin);
+			col.classList.add("oGV");
+			toggle('oGV');
+
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGT_acc_unique,a[i].oGT_app_unique);
+			col.classList.add("oGT");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGT_ap,a[i].oGT_acc_unique);
+			col.classList.add("oGT");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGT_re,a[i].oGT_ap);
+			col.classList.add("oGT");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGT_co,a[i].oGT_fin);
+			col.classList.add("oGT");
+			toggle('oGT');
+
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGE_acc_unique,a[i].oGE_app_unique);
+			col.classList.add("oGE");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGE_ap,a[i].oGE_acc_unique);
+			col.classList.add("oGE");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGE_re,a[i].oGE_ap);
+			col.classList.add("oGE");
+			col = newrow.insertCell(-1);
+			col.innerHTML=fDiv(a[i].oGE_co,a[i].oGE_fin);
+			col.classList.add("oGE");
+			toggle('oGE');
+
+
+		}
+	}
+	//$('#statusbar').html("");
+	var exampleTable = document.querySelector('table#results')
+	Sortable.init(); //Restarts sortable script
+}
+
+
 
 function showResults(a){
 	if(true){ //There used to be a condition here, but using promises makes it overhead
