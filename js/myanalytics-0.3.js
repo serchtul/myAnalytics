@@ -177,6 +177,34 @@ function analyticsreq(fn1,fn2){
 		},msg => console.error(msg));
 
 	}
+	else if(req_entity === 'lcs_americas') { //User requested all LCs Americas
+		retrieved_items = 0;
+
+		//This is harcoded MCs in Americas, it's better to update a store regularly in the search for new MCs (or deleting obsolete ones)
+		var mcs = [{"id":30,"name":"Barbados"},{"id":2107,"name":"Cuba"},{"id":178,"name":"Nicaragua"},{"id":2339,"name":"Haiti"},{"id":1553,"name":"Peru"},{"id":1557,"name":"Venezuela"},{"id":1538,"name":"Puerto Rico"},{"id":1535,"name":"Argentina"},{"id":1566,"name":"Chile"},{"id":1589,"name":"Mexico"},{"id":2108,"name":"Honduras"},{"id":1556,"name":"Guatemala"},{"id":1582,"name":"Panama"},{"id":1593,"name":"Bolivia"},{"id":1614,"name":"Uruguay"},{"id":177,"name":"Paraguay"},{"id":1621,"name":"United States"},{"id":577,"name":"Costa Rica"},{"id":1606,"name":"Brazil"},{"id":1599,"name":"Dominican Republic"},{"id":1572,"name":"El Salvador"},{"id":1567,"name":"Ecuador"},{"id":1554,"name":"Canada"},{"id":1551,"name":"Colombia"}];
+		total_items = mcs.length*7;
+
+		Promise.all(mcs.map(el => new Promise((resolve,reject) => baseAsyncReq(access_token,el.id,fn1,resolve,reject)))).then(regions => {
+			console.log("MCs done!");
+			
+			var regions_info = [];
+
+			regions.forEach(arr => {
+				arr.forEach((data,id) => {
+					if(data!=undefined) {
+						regions_info[id] = data;
+					}
+				});
+			});
+
+			//Cleans layout for showing results
+			cleanup();
+			fn2(regions_info);
+			$( "#eysort" ).trigger( "click" );
+			$( "#total-apd" ).trigger( "click" );
+		},msg => console.error(msg));
+
+	}
 	else { //There's an access token & it's a normal request
 		total_items = 7; //There's a total of 7 retrievable objects (6 Xers + LCs)
 		retrieved_items = 0;
