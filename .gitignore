@@ -1,3 +1,5 @@
 .DS_Store
 process/**
 conversion/**
+
+node_modules
