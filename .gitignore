@@ -3,3 +3,5 @@ process/**
 conversion/**
 
 node_modules
+
+.env
